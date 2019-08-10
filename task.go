@@ -1,11 +1,13 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/satori/go.uuid"
 )
@@ -140,11 +142,11 @@ func (t *Task) Cancel() error {
 
 func (t *Task) Fire() {
 	form := url.Values{"index": {strconv.Itoa(t.Index)}}
-	log.Printf("task fired with %v \n %v \n", t, form)
+	fmt.Fprintf(gin.DefaultWriter, "task fired with %v \n %v \n", t, form)
 	resp, err := http.PostForm(t.CallBackURL, form)
 	if err != nil {
-		log.Println(err)
+		fmt.Fprintln(gin.DefaultWriter, err)
 	} else {
-		log.Println(resp)
+		fmt.Fprintln(gin.DefaultWriter, resp)
 	}
 }
