@@ -84,16 +84,15 @@ func scheduleTaskTimerIfNeeded(t *Task) {
 }
 
 func cancelTaskTimerIfNeeded(t *Task) {
-	item := t.ScheduledItem()
-	item.timer.Stop()
-
 	<-timerLock
 	list := []*Timer{}
 	for _, tmp := range timers {
 		if tmp.task.ID != t.ID {
 			list = append(list, tmp)
 		} else {
-			tmp.timer.Stop()
+			if tmp.timer != nil {
+				tmp.timer.Stop()
+			}
 			if tmp.ticker != nil {
 				tmp.ticker.Stop()
 			}

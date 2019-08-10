@@ -151,7 +151,9 @@ func (t *Task) Fire() {
 	resp, err := http.PostForm(t.CallBackURL, form)
 	if err != nil {
 		fmt.Fprintln(gin.DefaultWriter, err)
-		rescheduleSingleFiredTaskTimer(t)
+		if !t.Closed {
+			rescheduleSingleFiredTaskTimer(t)
+		}
 	} else {
 		t.Cancel()
 		fmt.Fprintln(gin.DefaultWriter, resp)
