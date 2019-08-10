@@ -24,8 +24,8 @@ var (
 type Task struct {
 	ID          string        `json:"id"`
 	GroupKey    string        `json:"groupKey"`
-	Delay       time.Duration `json:"delay"`
-	Duration    time.Duration `json:"duration"`
+	Delay       time.Duration `json:"delay"`    //seconds
+	Duration    time.Duration `json:"duration"` //seconds
 	Repeat      bool          `json:"repeat"`
 	CallBackURL string        `json:"callBackURL"`
 	Index       int           `json:"index"`
@@ -35,6 +35,7 @@ type Task struct {
 }
 
 func init() {
+	tLock <- 1
 	/**
 	 * create table if not exist
 	 */
@@ -45,9 +46,10 @@ func init() {
 	/**
 	 * load task from db to mem, and reschedule with timer
 	 */
-	LoadTasks()
-	scheduleTasksTimer(tasks)
-	tLock <- 1
+	go func() {
+		LoadTasks()
+		scheduleTasksTimer(tasks)
+	}()
 }
 
 func (t *Task) InitBase() {

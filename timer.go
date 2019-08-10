@@ -11,7 +11,7 @@ type Timer struct {
 }
 
 var (
-	timers    = []Timer{}
+	timers    = []*Timer{}
 	timerLock = make(chan int, 1)
 )
 
@@ -22,7 +22,7 @@ func init() {
 func (t *Task) ScheduledItem() *Timer {
 	for _, tmp := range timers {
 		if tmp.task.ID == t.ID {
-			return &tmp
+			return tmp
 		}
 	}
 	return nil
@@ -41,11 +41,11 @@ func scheduleTasksTimer(list *[]Task) {
 func scheduleTaskTimerIfNeeded(t *Task) {
 	if t.ScheduledItem() == nil {
 		var timer *time.Timer = nil
-		item := Timer{task: t}
+		item := &Timer{task: t}
 		if t.Repeat {
 			timer = time.AfterFunc(t.Delay*time.Second, func() {
 				ticker := time.NewTicker(t.Duration * time.Second)
-				t.ScheduledItem().ticker = ticker
+				item.ticker = ticker
 				go func() {
 					for range ticker.C {
 						t.Fire()
@@ -71,7 +71,7 @@ func cancelTaskTimerIfNeeded(t *Task) {
 	item.timer.Stop()
 
 	<-timerLock
-	list := []Timer{}
+	list := []*Timer{}
 	for _, tmp := range timers {
 		if tmp.task.ID != t.ID {
 			list = append(list, tmp)

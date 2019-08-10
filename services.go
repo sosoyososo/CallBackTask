@@ -34,7 +34,9 @@ func CancelTask(c *gin.Context) {
 	if t == nil {
 		c.JSON(http.StatusOK, SucceedResult(nil))
 	} else {
+
 		err := t.Cancel()
+
 		if nil == err {
 			c.JSON(http.StatusOK, SucceedResult(t))
 		} else {
