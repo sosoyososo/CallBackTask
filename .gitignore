@@ -4,3 +4,4 @@ gin.log
 .vscode/
 main
 TaskDispatch
+build.sh
