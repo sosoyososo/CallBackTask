@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 
 	"github.com/gin-gonic/gin"
@@ -46,11 +47,13 @@ func init() {
 	if nil != err {
 		panic(err)
 	}
-	mysql, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+
+	urlstr := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		conf.MysqlUserName,
 		conf.MysqlUserPswd,
 		conf.MysqlHost,
-		MysqlDBName))
+		MysqlDBName)
+	mysql, err := gorm.Open("mysql", urlstr)
 	if nil != err {
 		panic(err)
 	}

@@ -43,8 +43,8 @@ func scheduleTaskTimerIfNeeded(t *Task) {
 		var timer *time.Timer = nil
 		item := Timer{task: t}
 		if t.Repeat {
-			timer = time.AfterFunc(t.Delay, func() {
-				ticker := time.NewTicker(t.Duration)
+			timer = time.AfterFunc(t.Delay*time.Second, func() {
+				ticker := time.NewTicker(t.Duration * time.Second)
 				t.ScheduledItem().ticker = ticker
 				go func() {
 					for range ticker.C {
@@ -54,7 +54,7 @@ func scheduleTaskTimerIfNeeded(t *Task) {
 			})
 			item.timer = timer
 		} else {
-			timer = time.AfterFunc(t.Delay+t.Duration, func() {
+			timer = time.AfterFunc((t.Delay+t.Duration)*time.Second, func() {
 				t.Fire()
 			})
 			item.timer = timer

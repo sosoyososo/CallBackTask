@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,7 +9,9 @@ import (
 
 func AddTask(c *gin.Context) {
 	var t Task
-	if nil != c.BindJSON(&t) {
+	err := c.BindJSON(&t)
+	if nil != err {
+		fmt.Println(err)
 		c.JSON(http.StatusOK, ParameterErrResult())
 	} else {
 		err := t.Schedule()
@@ -21,7 +24,7 @@ func AddTask(c *gin.Context) {
 }
 
 func CancelTask(c *gin.Context) {
-	id, exist := c.GetPostForm("id")
+	id, exist := c.GetQuery("id")
 	if !exist || len(id) == 0 {
 		c.JSON(http.StatusOK, ParameterErrResult())
 		return
@@ -41,7 +44,7 @@ func CancelTask(c *gin.Context) {
 }
 
 func ListTask(c *gin.Context) {
-	groupKey, exist := c.GetPostForm("group")
+	groupKey, exist := c.GetQuery("group")
 	if !exist || len(groupKey) == 0 {
 		c.JSON(http.StatusOK, ParameterErrResult())
 		return

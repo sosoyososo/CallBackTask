@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/satori/go.uuid"
@@ -132,4 +133,5 @@ func (t *Task) Cancel() error {
 }
 
 func (t *Task) Fire() {
+	fmt.Printf("task fired with %v \n", t)
 }
