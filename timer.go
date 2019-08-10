@@ -51,19 +51,16 @@ func scheduleTaskTimerIfNeeded(t *Task) {
 		item := &Timer{task: t}
 
 		var offset time.Duration = 0
-		if t.FirstFire.After(time.Now()) {
-			offset = time.Now().Sub(t.FirstFire)
+		if time.Duration(time.Now().Unix()) < t.FirstFire {
+			offset = t.FirstFire - time.Duration(time.Now().Unix())
 		}
-		if t.Repeat {
-			timer = time.AfterFunc(t.Delay*time.Second+offset, func() {
+		if t.Repeat && t.Duration > 0 {
+			timer = time.AfterFunc((t.Delay+offset)*time.Second, func() {
 				ticker := time.NewTicker(t.Duration * time.Second)
 				item.ticker = ticker
 				go func() {
 					for range ticker.C {
 						go func() {
-							t.Fire()
-							t.Index++
-							t.Update = time.Now()
 							db.Save(t)
 						}()
 					}
@@ -71,7 +68,7 @@ func scheduleTaskTimerIfNeeded(t *Task) {
 			})
 			item.timer = timer
 		} else {
-			timer = time.AfterFunc((t.Delay+t.Duration)*time.Second+offset, func() {
+			timer = time.AfterFunc((t.Delay+t.Duration+offset)*time.Second, func() {
 				t.Fire()
 			})
 			item.timer = timer

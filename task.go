@@ -35,10 +35,10 @@ type Task struct {
 	Update      time.Time `json:"update"`
 	Closed      bool      `json:"closed"`
 
-	FirstFire time.Time     `json:"firstFire"` //default will be now
-	Delay     time.Duration `json:"delay"`     //seconds
-	Duration  time.Duration `json:"duration"`  //seconds
-	Repeat    bool          `json:"repeat"`
+	FirstFire time.Duration `json:"firstFire"` //seconds //default will be now
+	Delay     time.Duration `json:"delay"`     //seconds //default will be 0
+	Duration  time.Duration `json:"duration"`  //seconds //if not exist, will not repeat
+	Repeat    bool          `json:"repeat"`    //duration needed
 }
 
 func init() {
@@ -66,8 +66,14 @@ func (t *Task) InitBase() {
 	}
 	t.Create = time.Now()
 	t.Update = t.Create
-	if t.FirstFire.Unix() == 0 {
-		t.FirstFire = time.Now()
+	if t.FirstFire <= 0 {
+		t.FirstFire = time.Duration(time.Now().Unix())
+	}
+	if t.Duration < 0 {
+		t.Duration = 0
+	}
+	if t.Delay < 0 {
+		t.Delay = 0
 	}
 }
 
@@ -147,15 +153,21 @@ func (t *Task) Cancel() error {
 
 func (t *Task) Fire() {
 	form := url.Values{"index": {strconv.Itoa(t.Index)}}
-	fmt.Fprintf(gin.DefaultWriter, "task fired with %v \n %v \n", t, form)
+	fmt.Fprintf(gin.DefaultWriter, "%v task fired with %v \n %v \n", time.Now(), t, form)
 	resp, err := http.PostForm(t.CallBackURL, form)
 	if err != nil {
 		fmt.Fprintln(gin.DefaultWriter, err)
 		if !t.Closed {
-			rescheduleSingleFiredTaskTimer(t)
+			time.AfterFunc(time.Second*10, func() {
+				rescheduleSingleFiredTaskTimer(t)
+			})
 		}
 	} else {
 		t.Cancel()
 		fmt.Fprintln(gin.DefaultWriter, resp)
 	}
+
+	t.Update = time.Now()
+	t.Index++
+	db.Save(t)
 }
