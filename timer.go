@@ -34,6 +34,13 @@ func scheduleTasksTimer(list *[]Task) {
 	}
 }
 
+func rescheduleSingleFiredTaskTimer(t *Task) {
+	if !t.Repeat {
+		cancelTaskTimerIfNeeded(t)
+		scheduleTaskTimerIfNeeded(t)
+	}
+}
+
 /**
  * single fire task : fired on delay + duration
  * repeat fire task : first fired on delay, then repeatly fired on new duration end
@@ -42,8 +49,13 @@ func scheduleTaskTimerIfNeeded(t *Task) {
 	if t.ScheduledItem() == nil {
 		var timer *time.Timer = nil
 		item := &Timer{task: t}
+
+		var offset time.Duration = 0
+		if t.FirstFire.After(time.Now()) {
+			offset = time.Now().Sub(t.FirstFire)
+		}
 		if t.Repeat {
-			timer = time.AfterFunc(t.Delay*time.Second, func() {
+			timer = time.AfterFunc(t.Delay*time.Second+offset, func() {
 				ticker := time.NewTicker(t.Duration * time.Second)
 				item.ticker = ticker
 				go func() {
@@ -59,9 +71,8 @@ func scheduleTaskTimerIfNeeded(t *Task) {
 			})
 			item.timer = timer
 		} else {
-			timer = time.AfterFunc((t.Delay+t.Duration)*time.Second, func() {
+			timer = time.AfterFunc((t.Delay+t.Duration)*time.Second+offset, func() {
 				t.Fire()
-				go t.Cancel()
 			})
 			item.timer = timer
 		}

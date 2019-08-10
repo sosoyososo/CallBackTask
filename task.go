@@ -27,16 +27,18 @@ var (
 )
 
 type Task struct {
-	ID          string        `json:"id"`
-	GroupKey    string        `json:"groupKey"`
-	Delay       time.Duration `json:"delay"`    //seconds
-	Duration    time.Duration `json:"duration"` //seconds
-	Repeat      bool          `json:"repeat"`
-	CallBackURL string        `json:"callBackURL"`
-	Index       int           `json:"index"`
-	Create      time.Time     `json:"create"`
-	Update      time.Time     `json:"update"`
-	Closed      bool          `json:"closed"`
+	ID          string    `json:"id"`
+	GroupKey    string    `json:"groupKey"`
+	CallBackURL string    `json:"callBackURL"`
+	Index       int       `json:"index"`
+	Create      time.Time `json:"create"`
+	Update      time.Time `json:"update"`
+	Closed      bool      `json:"closed"`
+
+	FirstFire time.Time     `json:"firstFire"` //default will be now
+	Delay     time.Duration `json:"delay"`     //seconds
+	Duration  time.Duration `json:"duration"`  //seconds
+	Repeat    bool          `json:"repeat"`
 }
 
 func init() {
@@ -64,6 +66,9 @@ func (t *Task) InitBase() {
 	}
 	t.Create = time.Now()
 	t.Update = t.Create
+	if t.FirstFire.Unix() == 0 {
+		t.FirstFire = time.Now()
+	}
 }
 
 func LoadTasks() error {
@@ -146,7 +151,9 @@ func (t *Task) Fire() {
 	resp, err := http.PostForm(t.CallBackURL, form)
 	if err != nil {
 		fmt.Fprintln(gin.DefaultWriter, err)
+		rescheduleSingleFiredTaskTimer(t)
 	} else {
+		t.Cancel()
 		fmt.Fprintln(gin.DefaultWriter, resp)
 	}
 }
