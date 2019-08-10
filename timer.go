@@ -48,7 +48,12 @@ func scheduleTaskTimerIfNeeded(t *Task) {
 				item.ticker = ticker
 				go func() {
 					for range ticker.C {
-						t.Fire()
+						go func() {
+							t.Fire()
+							t.Index++
+							t.Update = time.Now()
+							db.Save(t)
+						}()
 					}
 				}()
 			})
@@ -56,6 +61,7 @@ func scheduleTaskTimerIfNeeded(t *Task) {
 		} else {
 			timer = time.AfterFunc((t.Delay+t.Duration)*time.Second, func() {
 				t.Fire()
+				go t.Cancel()
 			})
 			item.timer = timer
 		}

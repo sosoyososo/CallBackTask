@@ -1,7 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"net/http"
+	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/satori/go.uuid"
@@ -114,6 +117,7 @@ func (t *Task) Cancel() error {
 	 * update mysql, remove from mem, and remove related timer
 	 * */
 	t.Closed = true
+	t.Update = time.Now()
 	err := db.Save(t).Error
 	if nil != err {
 		return err
@@ -135,5 +139,12 @@ func (t *Task) Cancel() error {
 }
 
 func (t *Task) Fire() {
-	fmt.Printf("task fired with %v \n", t)
+	form := url.Values{"index": {strconv.Itoa(t.Index)}}
+	log.Printf("task fired with %v \n %v \n", t, form)
+	resp, err := http.PostForm(t.CallBackURL, form)
+	if err != nil {
+		log.Println(err)
+	} else {
+		log.Println(resp)
+	}
 }
