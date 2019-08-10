@@ -27,3 +27,25 @@ curl -d '{"groupKey":"default","delay":5,"duration":2,"repeat":true,"callBackURL
 curl http://localhost:8080/cancelTask?id=812f5214-ad6a-4d18-ac74-b1c904868cb8
 
 ```
+
+# Config Example
+```
+// debug mode config file
+// conf-dev.json 
+{
+  "mysqlHost":"127.0.0.1",
+  "mysqlUserName":"root",
+  "mysqlUserPswd":"root",
+  "serverPort":":8081"
+}
+
+// debug mode config file
+// conf.json 
+{
+  "mysqlHost":"127.0.0.1",
+  "mysqlUserName":"root",
+  "mysqlUserPswd":"root",
+  "serverPort":":8081"
+}
+
+```
